@@ -17,7 +17,11 @@
  */
 
 #include <stdio.h>
+#ifdef _WIN32
+#include "getopt_win.h"
+#else
 #include <getopt.h>
+#endif
 #include <string>
 #include <vector>
 #include <sys/stat.h>

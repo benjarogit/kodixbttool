@@ -10,6 +10,13 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ---
 
+## [1.0.5] - 2026-02-20
+
+- **Windows build:** Added missing `getopt_win.c` and `getopt_win.h` so the Windows CMake build finds all required sources; CI workflow no longer fails with "missing source files". `main.cpp` includes the Windows getopt port when building on WIN32.
+- **Editor/IDE:** Added `kodixbttool.code-workspace` for VS Code/Cursor with CMake settings and recommended extensions (CMake Tools, C/C++).
+
+---
+
 ## [1.0.4] - 2026-02-19
 
 - **Windows build:** CMake no longer relies on vcpkg-provided LZO/libsquish configs. Added `cmake/FindLZO.cmake` and `cmake/Findlibsquish.cmake` so the Windows build finds LZO and libsquish via `CMAKE_PREFIX_PATH` (vcpkg installed dir). Workflow sets `CMAKE_PREFIX_PATH` for the Windows build step so dependencies are found reliably.
