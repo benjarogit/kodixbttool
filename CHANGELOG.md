@@ -10,6 +10,12 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ---
 
+## [1.0.3] - 2026-02-18
+
+- **Windows CI:** vcpkg is now acquired via `actions/checkout` and `${{ github.workspace }}/vcpkg` (Microsoft doc pattern); Bootstrap and install steps use `shell: bash` so the Windows runner no longer fails with PowerShell "Unexpected token 'install'".
+
+---
+
 ## [1.0.2] - 2026-02-17
 
 - **macOS build:** Fix 64-bit seek on Apple: use `fseeko` on macOS (no `fseeko64`) and `fseeko64` on Linux in `platform.h`, so the CI build no longer fails with undefined `fseeko64`.
