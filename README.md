@@ -9,7 +9,7 @@
 - **Extract** – Unpack a `.xbt` file to PNG/JPEG (and optionally GIF where supported) and recreate the directory tree.
 - **List** – Print all file paths inside a `.xbt` without extracting.
 - **Pack** – Build a `.xbt` from a directory of PNG/JPEG images (Kodi 17+ / Omega 21: A8R8G8B8/RGB8, **LZO-compressed**). **By default** the source directory is removed after a successful pack so it is not shipped with your skin or add-on; use `--no-remove-input` to keep it.
-- **Unused textures** – List or remove textures that are not referenced in the skin’s XML files (cross-platform). When packing, you can be prompted to remove unused textures before packing, or use `--remove-unused` / `--no-remove-unused`.
+- **Unused textures** – List or remove textures that are not referenced in the skin's XML files (cross-platform). When packing, you can be prompted to remove unused textures before packing, or use `--remove-unused` / `--no-remove-unused`.
 
 Output format matches the [Kodi TexturePacker](https://kodi.wiki/view/TexturePacker) specification so that packed files work in current Kodi versions.
 
@@ -44,7 +44,17 @@ brew install lzo libpng libjpeg-turbo giflib libsquish
 
 ### Windows
 
-Build is not fully supported yet. You can use [WSL2](https://docs.microsoft.com/en-us/windows/wsl/) and follow the Linux instructions, or use the GUI [KodiTextureTool](https://github.com/kittmaster/KodiTextureTool) for packing/unpacking on Windows.
+Install [vcpkg](https://vcpkg.io/), then install dependencies and build with CMake (use the vcpkg toolchain so CMake finds the libraries):
+
+```powershell
+vcpkg install libpng libjpeg-turbo lzo giflib libsquish
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake"
+cmake --build . --config Release
+```
+
+The binary is `build\Release\kodixbttool.exe`. Alternatively use the [pre-built binary](https://github.com/benjarogit/kodixbttool/releases) (`kodixbttool-windows-x64.exe`) or [WSL2](https://docs.microsoft.com/en-us/windows/wsl/) and follow the Linux instructions.
 
 ### WSL2
 
@@ -64,7 +74,7 @@ Pre-built binaries (Linux, macOS, Windows) and source archives are published in 
 | macOS    | `~/Library/Application Support/Kodi/addons/skin.NAME/media/` |
 | Windows  | `%APPDATA%\Kodi\addons\skin.NAME\media\` (e.g. `C:\Users\You\AppData\Roaming\Kodi\addons\...`) |
 
-Replace `skin.NAME` with your skin’s addon folder (e.g. `skin.dokukanal`). Open a terminal (or Command Prompt / PowerShell on Windows), then run the commands below and use **your** path instead of the example path.
+Replace `skin.NAME` with your skin's addon folder (e.g. `skin.dokukanal`). Open a terminal (or Command Prompt / PowerShell on Windows), then run the commands below and use **your** path instead of the example path.
 
 ## Installation from source
 
@@ -162,7 +172,7 @@ kodixbttool --pack -i ./media/Textures_extracted -o ./media/Textures.xbt
 
 ### Unused texture detection (cross-platform)
 
-List textures in an extracted directory that are **not** referenced in the skin’s XML files (useful to slim down the archive). The skin root is taken from `KODI_ADDONS` or `$HOME/.kodi/addons/skin.dokukanal` (Windows: `%USERPROFILE%\.kodi\addons\skin.dokukanal`), or set explicitly with `--skin-dir`:
+List textures in an extracted directory that are **not** referenced in the skin's XML files (useful to slim down the archive). The skin root is taken from `KODI_ADDONS` or `$HOME/.kodi/addons/skin.dokukanal` (Windows: `%USERPROFILE%\.kodi\addons\skin.dokukanal`), or set explicitly with `--skin-dir`:
 
 ```bash
 kodixbttool --list-unused -i ./media/Textures_extracted
@@ -171,7 +181,7 @@ kodixbttool --list-unused -i ./media/Textures_extracted --skin-dir=/path/to/skin
 
 When **packing**, if a skin directory is found (default or `--skin-dir`), the tool can remove unused textures before packing:
 
-- **Interactive:** If stdin is a TTY, you are asked: *“N unused texture(s). Remove before pack? (y/N)”*. Answer `y` to remove them, then pack.
+- **Interactive:** If stdin is a TTY, you are asked: *"N unused texture(s). Remove before pack? (y/N)"*. Answer `y` to remove them, then pack.
 - **Non-interactive:** Use `--remove-unused` to remove unused textures without prompting, or `--no-remove-unused` to never remove them (e.g. in scripts or CI).
 
 Paths starting with `default` (Kodi fallback icons) are never listed as unused and are not removed.

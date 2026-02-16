@@ -4,20 +4,31 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ---
 
-## [Unreleased] / planned
+## [Unreleased]
 
-- Windows build (getopt port, platform wrapper)
-- Pre-built binaries per platform in releases
+(No planned items.)
+
+---
+
+## [1.0.1] - 2026-02-16
+
+- **macOS build:** CMake now uses `find_package(GIF)` and `find_library` / `find_path` for LZO and libsquish on Apple; workflow sets `CMAKE_PREFIX_PATH` for Homebrew (`/opt/homebrew`, `/usr/local`) so dependencies are found reliably.
+- **Release workflow:** Only existing build artifacts are attached to the release (dynamic file list); release-assets job has explicit `contents: write` permission; requires at least the Linux binary to succeed.
 
 ---
 
 ## Changes vs xbtfextractor
 
+### Build & release
+
+- **Windows build:** getopt is provided by a small port (`getopt_win.c`/`getopt_win.h`) on Windows; directory scan and recursive delete in pack mode use the Windows API (FindFirstFile/FindNextFile, DeleteFile, RemoveDirectory). Build on Windows via CMake with [vcpkg](https://vcpkg.io/) for dependencies (libpng, libjpeg-turbo, lzo, giflib, libsquish).
+- **Pre-built binaries:** GitHub Actions workflow (`.github/workflows/build-release.yml`) builds on Linux, macOS, and Windows when a release is published and attaches `kodixbttool-linux-x64`, `kodixbttool-macos`, and `kodixbttool-windows-x64.exe` to the release so users can download a ready-to-run binary per platform.
+
 ### Unused texture detection (cross-platform)
 
-- **--list-unused -i INPUT_DIR [--skin-dir=DIR]:** List texture paths in INPUT_DIR that are not referenced in the skin’s XML files. Skin root defaults to `KODI_ADDONS` or `$HOME/.kodi/addons/skin.dokukanal` (Windows: `%USERPROFILE%\.kodi\addons\skin.dokukanal`). Paths starting with `default` are excluded (Kodi fallback icons).
+- **--list-unused -i INPUT_DIR [--skin-dir=DIR]:** List texture paths in INPUT_DIR that are not referenced in the skin's XML files. Skin root defaults to `KODI_ADDONS` or `$HOME/.kodi/addons/skin.dokukanal` (Windows: `%USERPROFILE%\.kodi\addons\skin.dokukanal`). Paths starting with `default` are excluded (Kodi fallback icons).
 - **Pack with optional unused removal:** When packing, if a skin directory is available (default or `--skin-dir`), the tool can remove unused textures before packing:
-  - **Interactive:** If stdin is a TTY, prompts “N unused texture(s). Remove before pack? (y/N)”.
+  - **Interactive:** If stdin is a TTY, prompts "N unused texture(s). Remove before pack? (y/N)".
   - **--remove-unused:** Remove unused without prompting.
   - **--no-remove-unused:** Do not remove (e.g. for scripts/CI).
 - Implemented in C++ (`skin_unused.cpp`) with cross-platform directory walk (Unix: opendir/readdir; Windows: FindFirstFile/FindNextFile), XML scan via regex, and TTY detection for the prompt.

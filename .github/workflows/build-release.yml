@@ -15,6 +15,8 @@ jobs:
             name: linux-x64
           - os: macos-latest
             name: macos
+          - os: windows-latest
+            name: windows-x64
 
     runs-on: ${{ matrix.os }}
 
@@ -31,22 +33,52 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install cmake lzo libpng libjpeg-turbo giflib libsquish
 
-      - name: Build
+      - name: Install vcpkg and dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.bat"
+          "$RUNNER_TEMP/vcpkg/vcpkg" install libpng libjpeg-turbo lzo giflib libsquish
+
+      - name: Build (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         run: |
           mkdir build && cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/opt/homebrew;/usr/local"
+          else
+            cmake .. -DCMAKE_BUILD_TYPE=Release
+          fi
           cmake --build .
 
-      - name: Upload artifact
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$RUNNER_TEMP/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          cmake --build . --config Release
+
+      - name: Upload artifact (Linux/macOS)
+        if: matrix.os != 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
           name: kodixbttool-${{ matrix.name }}
           path: build/kodixbttool
 
+      - name: Upload artifact (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kodixbttool-${{ matrix.name }}
+          path: build/Release/kodixbttool.exe
+
   release-assets:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
+    permissions:
+      contents: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -54,17 +86,20 @@ jobs:
           path: artifacts
 
       - name: Prepare release assets
+        id: prepare
         run: |
-          cp artifacts/kodixbttool-linux-x64/kodixbttool kodixbttool-linux-x64
-          cp artifacts/kodixbttool-macos/kodixbttool kodixbttool-macos
-          chmod +x kodixbttool-linux-x64 kodixbttool-macos
+          [ -d artifacts/kodixbttool-linux-x64 ] && cp artifacts/kodixbttool-linux-x64/kodixbttool kodixbttool-linux-x64 && chmod +x kodixbttool-linux-x64 || true
+          [ -d artifacts/kodixbttool-macos ] && cp artifacts/kodixbttool-macos/kodixbttool kodixbttool-macos && chmod +x kodixbttool-macos || true
+          [ -f artifacts/kodixbttool-windows-x64/kodixbttool.exe ] && cp artifacts/kodixbttool-windows-x64/kodixbttool.exe kodixbttool-windows-x64.exe || true
+          [ -f kodixbttool-linux-x64 ] || (echo "No linux artifact" && exit 1)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          ls -1 kodixbttool-* 2>/dev/null >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
-          files: |
-            kodixbttool-linux-x64
-            kodixbttool-macos
+          files: ${{ steps.prepare.outputs.files }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

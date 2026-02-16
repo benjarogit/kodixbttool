@@ -2,7 +2,7 @@
 
 # kodixbttool
 
-Werkzeug zum **Kodi-konformen** Extrahieren und Packen von Kodi-XBT-Texturarchiven (`.xbt`). Damit kannst du Skin-Texturen (z. B. `Textures.xbt`, `Square.xbt`) auspacken, bearbeiten und wieder in eine einzelne `.xbt`-Datei packen, die Kodi fehlerfrei lädt.
+Werkzeug zum **Kodi-konformen** Extrahieren und Packen von Kodi-XBT-Texturarchiven (`.xbt`). Damit kannst du Skin-Texturen (z. B. `Textures.xbt`, `Square.xbt`) auspacken, bearbeiten und wieder in eine einzelne `.xbt`-Datei packen, die Kodi fehlerfrei lädt.
 
 ## Wofür es gedacht ist
 
@@ -25,7 +25,7 @@ Zum Bauen und Ausführen werden folgende Bibliotheken benötigt:
 
 ### Linux
 
-Entwicklungspakete installieren, z. B.:
+Entwicklungspakete installieren, z. B.:
 
 - **Debian / Ubuntu:**  
   `sudo apt install liblzo2-dev libpng-dev libjpeg-dev libgif-dev libsquish-dev`
@@ -44,17 +44,27 @@ brew install lzo libpng libjpeg-turbo giflib libsquish
 
 ### Windows
 
-Build wird derzeit nicht vollständig unterstützt. Du kannst [WSL2](https://docs.microsoft.com/de-de/windows/wsl/) nutzen und die Linux-Anleitung befolgen oder die GUI [KodiTextureTool](https://github.com/kittmaster/KodiTextureTool) zum Packen/Entpacken unter Windows verwenden.
+[vcpkg](https://vcpkg.io/) installieren, dann Abhängigkeiten und Build mit CMake (vcpkg-Toolchain angeben, damit CMake die Bibliotheken findet):
+
+```powershell
+vcpkg install libpng libjpeg-turbo lzo giflib libsquish
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="C:/pfad/zu/vcpkg/scripts/buildsystems/vcpkg.cmake"
+cmake --build . --config Release
+```
+
+Das Binary liegt unter `build\Release\kodixbttool.exe`. Alternativ das [fertige Binary](https://github.com/benjarogit/kodixbttool/releases) (`kodixbttool-windows-x64.exe`) nutzen oder [WSL2](https://docs.microsoft.com/de-de/windows/wsl/) und die Linux-Anleitung befolgen.
 
 ### WSL2
 
-Wie unter Linux; Pakete für deine WSL-Distribution (z. B. Ubuntu) wie oben installieren.
+Wie unter Linux; Pakete für deine WSL-Distribution (z. B. Ubuntu) wie oben installieren.
 
 ## Downloads
 
 Fertige Binaries (Linux, macOS, Windows) und Quellcode-Archive findest du in den [Releases](https://github.com/benjarogit/kodixbttool/releases). **Ein** Binary wird zum **Entpacken** und **Packen** genutzt; lade die Version für deine Plattform herunter oder baue aus dem Quellcode (siehe unten).
 
-**Wie die Pfade funktionieren:** Das Tool **fragt dich beim Start nicht** nach Pfaden. Es gibt **keine Konfigurationsdatei**. Du übergibst alle Pfade immer in der Kommandozeile: welche .xbt-Datei oder welcher Ordner rein soll, wohin ausgepackt oder gepackt werden soll. Die .xbt-Dateien können beliebig liegen; du kannst volle oder relative Pfade angeben, z. B. `./Textures.xbt` oder `C:\Kodi\addons\skin.mein\media\Textures.xbt`.
+**Wie die Pfade funktionieren:** Das Tool **fragt dich beim Start nicht** nach Pfaden. Es gibt **keine Konfigurationsdatei**. Du übergibst alle Pfade immer in der Kommandozeile: welche .xbt-Datei oder welcher Ordner rein soll, wohin ausgepackt oder gepackt werden soll. Die .xbt-Dateien können beliebig liegen; du kannst volle oder relative Pfade angeben, z. B. `./Textures.xbt` oder `C:\Kodi\addons\skin.mein\media\Textures.xbt`.
 
 **Typischer Kodi-Skin-Medienordner** (dort liegen meist `Textures.xbt` und `Square.xbt`):
 
@@ -62,9 +72,9 @@ Fertige Binaries (Linux, macOS, Windows) und Quellcode-Archive findest du in den
 |-----------|-----------------|
 | Linux     | `~/.kodi/addons/skin.NAME/media/` |
 | macOS     | `~/Library/Application Support/Kodi/addons/skin.NAME/media/` |
-| Windows   | `%APPDATA%\Kodi\addons\skin.NAME\media\` (z. B. `C:\Users\Du\AppData\Roaming\Kodi\addons\...`) |
+| Windows   | `%APPDATA%\Kodi\addons\skin.NAME\media\` (z. B. `C:\Users\Du\AppData\Roaming\Kodi\addons\...`) |
 
-Ersetze `skin.NAME` durch den Addon-Ordner deines Skins (z. B. `skin.dokukanal`). Terminal (bzw. Eingabeaufforderung/PowerShell unter Windows) öffnen und die Befehle mit **deinen** Pfaden ausführen.
+Ersetze `skin.NAME` durch den Addon-Ordner deines Skins (z. B. `skin.dokukanal`). Terminal (bzw. Eingabeaufforderung/PowerShell unter Windows) öffnen und die Befehle mit **deinen** Pfaden ausführen.
 
 ## Installation aus dem Quellcode
 
@@ -74,7 +84,7 @@ cd kodixbttool
 make
 ```
 
-Die Binärdatei heißt `kodixbttool`. Optional in ein Verzeichnis im `PATH` kopieren, z. B.:
+Die Binärdatei heißt `kodixbttool`. Optional in ein Verzeichnis im `PATH` kopieren, z. B.:
 
 ```bash
 cp kodixbttool ~/.local/bin/
@@ -92,7 +102,7 @@ Anschließend `./kodixbttool --help` ausführen.
 
 **Hinweis:** Unter giflib 5.x wird die GIF-Extraktion nicht unterstützt (GIF-Einträge werden mit einer Meldung übersprungen). Die meisten Skin-Texturen sind PNG/JPEG.
 
-**Tests ausführen:** Das Test-Skript (z. B. `./test.sh`) erwartet mindestens eine .xbt-Datei. Setze `KODIXBT_TEST_XBT_DIR` auf ein Verzeichnis mit .xbt-Dateien (z. B. deinen Skin-Medienordner), oder lege .xbt-Dateien in ein Verzeichnis `testdata/` neben dem Skript; wenn nicht gesetzt, nutzt das Skript ggf. einen Standardpfad (z. B. Kodi-Skin-Medienordner).
+**Tests ausführen:** Das Test-Skript (z. B. `./test.sh`) erwartet mindestens eine .xbt-Datei. Setze `KODIXBT_TEST_XBT_DIR` auf ein Verzeichnis mit .xbt-Dateien (z. B. deinen Skin-Medienordner), oder lege .xbt-Dateien in ein Verzeichnis `testdata/` neben dem Skript; wenn nicht gesetzt, nutzt das Skript ggf. einen Standardpfad (z. B. Kodi-Skin-Medienordner).
 
 ## Nutzung
 
@@ -109,12 +119,12 @@ cd ~/.kodi/addons/skin.dokukanal/media
 # 3) Optional: anzeigen, welche Texturen im Skin nicht genutzt werden
 ./kodixbttool --list-unused -i ./Textures_extracted
 
-# 4) Wieder packen (z. B. nach Bearbeitung). Es wird gefragt, ob Unbenutzte entfernt werden sollen.
+# 4) Wieder packen (z. B. nach Bearbeitung). Es wird gefragt, ob Unbenutzte entfernt werden sollen.
 ./kodixbttool --pack -i ./Textures_extracted -o ./Textures.xbt
 ./kodixbttool --pack -i ./Square_extracted -o ./Square.xbt
 ```
 
-Wenn du die fertige Binärdatei heruntergeladen hast: Pfad zum Tool angeben (z. B. `~/Downloads/kodixbttool`) oder ins PATH legen und `kodixbttool` von überall aufrufen.
+Wenn du die fertige Binärdatei heruntergeladen hast: Pfad zum Tool angeben (z. B. `~/Downloads/kodixbttool`) oder ins PATH legen und `kodixbttool` von überall aufrufen.
 
 ### Extrahieren
 
@@ -172,7 +182,7 @@ kodixbttool --list-unused -i ./media/Textures_extracted --skin-dir=/pfad/zu/skin
 Beim **Packen** kann das Tool unbenutzte Texturen vor dem Packen entfernen, wenn ein Skin-Verzeichnis gefunden wird:
 
 - **Interaktiv:** Bei TTY erscheint: *„N unbenutzte Textur(en). Vor dem Packen entfernen? (j/N)“* – mit `j` werden sie gelöscht, dann gepackt.
-- **Ohne Abfrage:** `--remove-unused` entfernt unbenutzte ohne Nachfrage, `--no-remove-unused` entfernt nie (z. B. in Skripten/CI).
+- **Ohne Abfrage:** `--remove-unused` entfernt unbenutzte ohne Nachfrage, `--no-remove-unused` entfernt nie (z. B. in Skripten/CI).
 
 Pfade die mit `default` beginnen (Kodi-Fallback-Icons) werden nie als unbenutzt gelistet und nicht gelöscht.
 
