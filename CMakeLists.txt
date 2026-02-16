@@ -8,7 +8,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 endif()
 
-project(kodixbttool CXX)
+# C required for getopt_win.c and platform_win.c on Windows
+project(kodixbttool C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -23,6 +24,11 @@ if(WIN32)
     list(APPEND SOURCES getopt_win.c platform_win.c)
 endif()
 add_executable(kodixbttool ${SOURCES})
+
+# Force /MT on Windows so we match vcpkg x64-windows-static (overrides toolchain default)
+if(MSVC)
+  set_property(TARGET kodixbttool PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 target_include_directories(kodixbttool PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
