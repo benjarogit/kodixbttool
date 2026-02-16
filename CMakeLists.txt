@@ -21,11 +21,11 @@ find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 
 if(WIN32)
-    # vcpkg's lzo port does not ship FindLZO/LZOConfig; we provide cmake/FindLZO.cmake
+    # vcpkg's lzo/libsquish ports: we provide cmake/FindLZO.cmake and Findlibsquish.cmake
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     find_package(LZO REQUIRED)
     find_package(GIF REQUIRED)
-    find_package(libsquish CONFIG REQUIRED)
+    find_package(libsquish REQUIRED)
     target_link_libraries(kodixbttool PRIVATE
         PNG::PNG
         JPEG::JPEG

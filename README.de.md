@@ -1,5 +1,9 @@
 [**Deutsch**](README.de.md) | [English](README.md)
 
+<div align="center">
+  <img src="logo.png" alt="kodixbttool" width="200" />
+</div>
+
 # kodixbttool
 
 Werkzeug zum **Kodi-konformen** Extrahieren und Packen von Kodi-XBT-Texturarchiven (`.xbt`). Damit kannst du Skin-Texturen (z. B. `Textures.xbt`, `Square.xbt`) auspacken, bearbeiten und wieder in eine einzelne `.xbt`-Datei packen, die Kodi fehlerfrei lädt.
