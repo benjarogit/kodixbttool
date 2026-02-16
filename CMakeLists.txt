@@ -21,15 +21,21 @@ find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 
 if(WIN32)
-    find_package(LZO REQUIRED)
+    # vcpkg's lzo port does not provide FindLZO/LZOConfig; use find_library/find_path like on macOS
     find_package(GIF REQUIRED)
     find_package(libsquish CONFIG REQUIRED)
+    find_library(LZO2_LIB NAMES lzo2 lzo)
+    find_path(LZO2_INCLUDE NAMES lzo/lzo1x.h)
+    if(NOT LZO2_LIB OR NOT LZO2_INCLUDE)
+        message(FATAL_ERROR "LZO not found. Install with: vcpkg install lzo")
+    endif()
+    target_include_directories(kodixbttool PRIVATE ${LZO2_INCLUDE})
     target_link_libraries(kodixbttool PRIVATE
         PNG::PNG
         JPEG::JPEG
-        LZO::LZO
         GIF::GIF
         libsquish::libsquish
+        ${LZO2_LIB}
     )
 elseif(APPLE)
     # macOS/Homebrew: use FindGIF; LZO and squish often have no CMake config, use find_library
