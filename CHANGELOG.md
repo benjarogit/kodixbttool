@@ -10,6 +10,13 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ---
 
+## [1.0.4] - 2026-02-19
+
+- **Windows build:** CMake no longer relies on vcpkg-provided LZO/libsquish configs. Added `cmake/FindLZO.cmake` and `cmake/Findlibsquish.cmake` so the Windows build finds LZO and libsquish via `CMAKE_PREFIX_PATH` (vcpkg installed dir). Workflow sets `CMAKE_PREFIX_PATH` for the Windows build step so dependencies are found reliably.
+- **README:** Logo image added and displayed centered in README.md and README.de.md.
+
+---
+
 ## [1.0.3] - 2026-02-18
 
 - **Windows CI:** vcpkg is now acquired via `actions/checkout` and `${{ github.workspace }}/vcpkg` (Microsoft doc pattern); Bootstrap and install steps use `shell: bash` so the Windows runner no longer fails with PowerShell "Unexpected token 'install'".
