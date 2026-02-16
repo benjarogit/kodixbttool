@@ -28,6 +28,11 @@
 #include <unistd.h>
 #endif
 
+#ifdef _WIN32
+static int strcasecmp_wrap(const char *a, const char *b) { return _stricmp(a, b); }
+#define strcasecmp strcasecmp_wrap
+#endif
+
 static const char *IMAGE_EXTS[] = { ".png", ".jpg", ".jpeg", ".gif", NULL };
 
 static int is_image_ext(const char *name)
@@ -41,13 +46,6 @@ static int is_image_ext(const char *name)
     }
     return 0;
 }
-
-#ifdef _WIN32
-static int strcasecmp(const char *a, const char *b)
-{
-    return _stricmp(a, b);
-}
-#endif
 
 std::string skin_unused_default_skin_root()
 {

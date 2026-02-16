@@ -18,6 +18,12 @@
 
 #include "xbtf.h"
 #include "platform.h"
+#ifdef _WIN32
+#include <direct.h>
+#include <sys/stat.h>
+#else
+#include <sys/stat.h>
+#endif
 
 /** @brief Initialize LZO; sets fileOpened to false. */
 Xbtf::Xbtf()
@@ -226,16 +232,25 @@ bool Xbtf::createPath(const char *path)
 /** @brief Create single directory with common permissions. @return 0 on success. */
 int Xbtf::makeDir(const char *dir)
 {
+#ifdef _WIN32
+    struct _stat info;
+    int status = 0;
+    if (_stat(dir, &info) != 0)
+    {
+        if (_mkdir(dir) != 0)
+            status = -1;
+    }
+    return status;
+#else
     struct stat info;
     int status = 0;
-
     if (stat(dir, &info) != 0)
     {
         if (mkdir(dir, S_IRWXU | S_IXGRP | S_IRGRP | S_IROTH | S_IXOTH) != 0)
             status = -1;
     }
-
     return status;
+#endif
 }
 
 /** @brief Check if path was already created (cached). */

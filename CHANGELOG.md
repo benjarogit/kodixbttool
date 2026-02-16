@@ -6,7 +6,13 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ## [Unreleased]
 
-- **Repo:** Workspace file `kodixbttool.code-workspace` removed from repo (local use only; added to `.gitignore`).
+(No planned items.)
+
+---
+
+## [1.0.6] - 2026-02-20
+
+- **Windows build:** Fix compile errors on Windows: use `_stat`/`_mkdir` and `<direct.h>` in `xbtf.cpp` instead of POSIX `stat`/`mkdir` and `S_IRWXU` etc.; define `strcasecmp` for Windows before first use in `skin_unused.cpp` (via `_stricmp`). CI Windows build and release workflow now succeed.
 
 ---
 
