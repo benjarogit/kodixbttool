@@ -12,20 +12,33 @@ Wenn du auf GitHub ein **Release veröffentlichst** (oder unter *Actions → Bui
 
 Fertige Binaries entstehen also automatisch beim Veröffentlichen eines Releases; manueller Build oder Upload ist nicht nötig.
 
-## Neues Release erstellen
+## Neues Release erstellen (immer mit passendem Changelog)
 
-1. Änderungen im **offiziellen Repo** haben (z. B. `~/Dokumente/kodixbttool` oder wo du pushst).
-2. **CHANGELOG.md** anpassen: Einträge unter `[Unreleased]` in einen neuen Versionsblock z. B. `## [1.0.1] - YYYY-MM-DD` verschieben.
-3. Committen, pushen:
+1. **CHANGELOG.md** anpassen (vor dem Release):
+   - Neuen Versionsblock anlegen, z. B. `## [1.0.2] - YYYY-MM-DD`.
+   - Darunter die Änderungen für diese Version (Stichpunkte).
+   - `[Unreleased]` leer lassen oder „(No planned items.)“.
+
+2. **Committen und pushen** (inkl. CHANGELOG + Code-Änderungen):
    ```bash
-   git add -A && git commit -m "Release v1.0.1: macOS build fix, workflow improvements"
+   cd ~/Dokumente/kodixbttool
+   git add -A && git status
+   git commit -m "Release v1.0.2: ..."   # Kurzbeschreibung
    git push origin master
    ```
-4. Auf GitHub: **Releases → Draft a new release**:
-   - Tag: z. B. `v1.0.1` (neu erstellen).
-   - Title: z. B. `v1.0.1`.
-   - Beschreibung: Inhalt aus CHANGELOG für diese Version einfügen.
-   - **Publish release** klicken.
-5. Der Workflow startet automatisch, baut alle Plattformen und hängt die Binaries an das neue Release an.
 
-Wenn ein Build (z. B. macOS oder Windows) fehlschlägt: Actions-Log prüfen, Fix im Repo machen, dann entweder das Release löschen und mit gleichem Tag neu anlegen oder ein Patch-Release (z. B. v1.0.2) machen.
+3. **Release auf GitHub anlegen** (Tag = Version, Beschreibung = Changelog):
+   - **Releases → Draft a new release**
+   - **Choose a tag:** z. B. `v1.0.2` eingeben → **Create new tag: v1.0.2**
+   - **Release title:** z. B. `v1.0.2`
+   - **Describe this release:** Den **Changelog-Abschnitt** für diese Version aus CHANGELOG.md reinkopieren (nur die Punkte unter `## [1.0.2]`, ohne die Überschrift), z. B.:
+     ```text
+     - **macOS build:** Fix 64-bit seek on Apple: use `fseeko` on macOS and `fseeko64` on Linux in `platform.h`.
+     ```
+   - **Publish release** klicken.
+
+4. Der Workflow startet automatisch und hängt die Binaries an das Release an.
+
+**Optional (GitHub CLI):** Mit `gh release create v1.0.2 --title "v1.0.2" --notes "- **macOS build:** …"` kannst du das Release von der Kommandozeile erstellen; die Notes sind die Release-Beschreibung (Changelog-Text).
+
+Wenn ein Build fehlschlägt: Fix committen/pushen, dann Release löschen und mit gleichem Tag neu anlegen oder ein neues Patch-Release (z. B. v1.0.3) erstellen.

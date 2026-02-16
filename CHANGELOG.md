@@ -10,6 +10,12 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ---
 
+## [1.0.2] - 2026-02-17
+
+- **macOS build:** Fix 64-bit seek on Apple: use `fseeko` on macOS (no `fseeko64`) and `fseeko64` on Linux in `platform.h`, so the CI build no longer fails with undefined `fseeko64`.
+
+---
+
 ## [1.0.1] - 2026-02-16
 
 - **macOS build:** CMake now uses `find_package(GIF)` and `find_library` / `find_path` for LZO and libsquish on Apple; workflow sets `CMAKE_PREFIX_PATH` for Homebrew (`/opt/homebrew`, `/usr/local`) so dependencies are found reliably.
