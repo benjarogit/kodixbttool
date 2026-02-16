@@ -35,11 +35,11 @@ jobs:
 
       - name: Install vcpkg and dependencies (Windows)
         if: matrix.os == 'windows-latest'
-        shell: cmd
+        shell: bash
         run: |
-          git clone https://github.com/microsoft/vcpkg.git %RUNNER_TEMP%\vcpkg
-          %RUNNER_TEMP%\vcpkg\bootstrap-vcpkg.bat
-          %RUNNER_TEMP%\vcpkg\vcpkg install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
+          git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.bat"
+          "$RUNNER_TEMP/vcpkg/vcpkg" install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
 
       - name: Build (Linux/macOS)
         if: matrix.os != 'windows-latest'
@@ -54,11 +54,11 @@ jobs:
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
-        shell: cmd
+        shell: bash
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=%RUNNER_TEMP%\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$RUNNER_TEMP/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
           cmake --build . --config Release
 
       - name: Upload artifact (Linux/macOS)
