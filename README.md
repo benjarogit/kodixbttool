@@ -17,7 +17,24 @@
 
 Output format matches the [Kodi TexturePacker](https://kodi.wiki/view/TexturePacker) specification so that packed files work in current Kodi versions.
 
-## Requirements
+## Downloads (recommended)
+
+Pre-built binaries for **Linux**, **macOS** and **Windows** are in the [Releases](https://github.com/benjarogit/kodixbttool/releases) section. **Most users can use these without compiling.**
+
+| Platform | Download |
+|----------|----------|
+| Linux x64 | `kodixbttool-linux-x64` |
+| macOS     | `kodixbttool-macos` |
+| Windows x64 | `kodixbttool-windows-x64.exe` |
+
+1. Open the [latest release](https://github.com/benjarogit/kodixbttool/releases), download the file for your OS.
+2. On Linux/macOS: make it executable (`chmod +x kodixbttool-linux-x64` or `chmod +x kodixbttool-macos`), then run it from the terminal with your paths (see [Usage](#usage) below).
+3. On Windows: run `kodixbttool-windows-x64.exe` from Command Prompt or PowerShell with your paths.
+
+No config file: you always pass input/output paths on the command line. Example:  
+`kodixbttool -o ./out -c ./Textures.xbt` (extract) or `kodixbttool --pack -i ./out -o ./Textures.xbt` (pack).
+
+## Requirements (only for building from source)
 
 You need these libraries to build and run kodixbttool:
 
@@ -48,25 +65,23 @@ brew install lzo libpng libjpeg-turbo giflib libsquish
 
 ### Windows
 
-Install [vcpkg](https://vcpkg.io/), then install dependencies and build with CMake (use the vcpkg toolchain so CMake finds the libraries):
+Install [vcpkg](https://vcpkg.io/), then install dependencies (static triplet so the runtime matches) and build with CMake:
 
 ```powershell
-vcpkg install libpng libjpeg-turbo lzo giflib libsquish
+vcpkg install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
 mkdir build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake"
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
 cmake --build . --config Release
 ```
 
-The binary is `build\Release\kodixbttool.exe`. Alternatively use the [pre-built binary](https://github.com/benjarogit/kodixbttool/releases) (`kodixbttool-windows-x64.exe`) or [WSL2](https://docs.microsoft.com/en-us/windows/wsl/) and follow the Linux instructions.
+The binary is `build\Release\kodixbttool.exe`. **Easier:** use the [pre-built binary](https://github.com/benjarogit/kodixbttool/releases) (`kodixbttool-windows-x64.exe`) from Releases so you don’t need to install vcpkg or compile. Or use [WSL2](https://docs.microsoft.com/en-us/windows/wsl/) and follow the Linux instructions.
 
 ### WSL2
 
 Same as Linux; install the packages for your WSL distribution (e.g. Ubuntu) as above.
 
-## Downloads
-
-Pre-built binaries (Linux, macOS, Windows) and source archives are published in the [Releases](https://github.com/benjarogit/kodixbttool/releases) section. One binary is used for both **extracting** and **packing**; download the build for your platform or build from source (see below).
+## Paths and usage
 
 **How paths work:** The tool does **not** ask you for paths when you start it. There is **no config file**. You always pass paths on the command line: input file or folder, output file or folder. Your .xbt files can be anywhere; you can use full paths or relative paths. Examples: `./Textures.xbt`, `C:\Kodi\addons\skin.my\media\Textures.xbt`, or `~/Library/Application Support/Kodi/addons/skin.my/media/Textures.xbt`.
 
@@ -80,7 +95,9 @@ Pre-built binaries (Linux, macOS, Windows) and source archives are published in 
 
 Replace `skin.NAME` with your skin's addon folder (e.g. `skin.dokukanal`). Open a terminal (or Command Prompt / PowerShell on Windows), then run the commands below and use **your** path instead of the example path.
 
-## Installation from source
+## Building from source (optional)
+
+If you prefer to compile kodixbttool yourself (e.g. to get the latest git version), install the [libraries listed under Requirements](#requirements-only-for-building-from-source) for your platform, then:
 
 ```bash
 git clone https://github.com/benjarogit/kodixbttool.git
@@ -102,7 +119,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build .
 ```
 
-Then run `./kodixbttool --help`.
+Then run `./kodixbttool --help`. On Windows with vcpkg, use the **x64-windows-static** triplet so the CRT matches (see [Windows](#windows) above); or use the pre-built binary from Releases.
 
 **Note:** With giflib 5.x, GIF extraction is not supported (GIF entries are skipped with a message). Most skin textures are PNG/JPEG.
 
