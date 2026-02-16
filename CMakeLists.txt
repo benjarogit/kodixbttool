@@ -1,4 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
+
+# Match vcpkg x64-windows-static: use static CRT (/MT) to avoid LNK2038
+if(POLICY CMP0091)
+  cmake_policy(SET CMP0091 NEW)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+endif()
+
 project(kodixbttool CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -11,7 +20,7 @@ endif()
 
 set(SOURCES main.cpp xbtf.cpp xbtf_pack.cpp skin_unused.cpp)
 if(WIN32)
-    list(APPEND SOURCES getopt_win.c)
+    list(APPEND SOURCES getopt_win.c platform_win.c)
 endif()
 add_executable(kodixbttool ${SOURCES})
 
@@ -21,6 +30,8 @@ find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 
 if(WIN32)
+    # Match vcpkg static CRT; suppress MSVC secure-CRT warnings (fopen, getenv, etc.)
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     # vcpkg's lzo/libsquish ports: we provide cmake/FindLZO.cmake and Findlibsquish.cmake
     list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
     find_package(LZO REQUIRED)
