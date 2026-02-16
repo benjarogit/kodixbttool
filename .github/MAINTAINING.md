@@ -14,6 +14,8 @@ Fertige Binaries entstehen also automatisch beim Veröffentlichen eines Releases
 
 ## Neues Release erstellen (immer mit passendem Changelog)
 
+**Wichtig:** Ein `git push` erstellt **kein** Release. Du musst das Release (Tag + Beschreibung) separat anlegen – per GitHub-Web oder mit dem Skript unten.
+
 1. **CHANGELOG.md** anpassen (vor dem Release):
    - Neuen Versionsblock anlegen, z. B. `## [1.0.2] - YYYY-MM-DD`.
    - Darunter die Änderungen für diese Version (Stichpunkte).
@@ -27,18 +29,21 @@ Fertige Binaries entstehen also automatisch beim Veröffentlichen eines Releases
    git push origin master
    ```
 
-3. **Release auf GitHub anlegen** (Tag = Version, Beschreibung = Changelog):
+3. **Release anlegen** (nur so erscheint es unter Releases und der Build-Workflow startet):
+
+   **Variante A – Skript (nur für Maintainer, Changelog aus CHANGELOG.md):**
+   ```bash
+   ./.github/scripts/release.sh 1.0.2
+   ```
+   Voraussetzung: [GitHub CLI](https://cli.github.com/) installiert und eingeloggt (`gh auth login`). Das Skript liegt unter `.github/scripts/` und ist nicht für Endnutzer gedacht.
+
+   **Variante B – GitHub-Web:**
    - **Releases → Draft a new release**
-   - **Choose a tag:** z. B. `v1.0.2` eingeben → **Create new tag: v1.0.2**
+   - **Choose a tag:** z. B. `v1.0.2` → **Create new tag: v1.0.2**
    - **Release title:** z. B. `v1.0.2`
-   - **Describe this release:** Den **Changelog-Abschnitt** für diese Version aus CHANGELOG.md reinkopieren (nur die Punkte unter `## [1.0.2]`, ohne die Überschrift), z. B.:
-     ```text
-     - **macOS build:** Fix 64-bit seek on Apple: use `fseeko` on macOS and `fseeko64` on Linux in `platform.h`.
-     ```
+   - **Describe this release:** Changelog-Abschnitt für diese Version aus CHANGELOG.md einfügen (die Punkte unter `## [1.0.2]`).
    - **Publish release** klicken.
 
-4. Der Workflow startet automatisch und hängt die Binaries an das Release an.
+4. Der Workflow startet automatisch; es laufen **3 Matrix-Jobs** (linux-x64, macos, windows-x64). **Hinweis:** Beim Run [v1.0.0 #1](https://github.com/benjarogit/kodixbttool/actions/runs/22074034285) siehst du nur 2 Jobs, weil dieser Run die Workflow-Datei **vom Tag v1.0.0** verwendet (ohne Windows). Ein **neu angelegtes** Release (z. B. v1.0.2) nutzt die aktuelle Datei von `master` und zeigt dann 3 Jobs.
 
-**Optional (GitHub CLI):** Mit `gh release create v1.0.2 --title "v1.0.2" --notes "- **macOS build:** …"` kannst du das Release von der Kommandozeile erstellen; die Notes sind die Release-Beschreibung (Changelog-Text).
-
-Wenn ein Build fehlschlägt: Fix committen/pushen, dann Release löschen und mit gleichem Tag neu anlegen oder ein neues Patch-Release (z. B. v1.0.3) erstellen.
+Wenn ein Build fehlschlägt: Fix committen/pushen, Release löschen und mit gleichem Tag neu anlegen oder ein neues Patch-Release (z. B. v1.0.3) erstellen.
