@@ -10,6 +10,12 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ---
 
+## [1.0.9] - 2026-02-20
+
+- **Windows build:** Fix LNK2019 for `xbt_fseek64`: declare it with `extern "C"` in `platform.h` when included from C++, so the linker matches the C implementation in `platform_win.c`.
+
+---
+
 ## [1.0.8] - 2026-02-20
 
 - **Windows build:** Fix C sources and runtime not applied in CI: enable C language in CMake (`project(kodixbttool C CXX)`) so `getopt_win.c` and `platform_win.c` are actually compiled and linked; force `MSVC_RUNTIME_LIBRARY` on target to `/MT` so it overrides vcpkg toolchain default and matches squish.lib (fixes LNK2038 and LNK2019).

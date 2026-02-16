@@ -10,6 +10,9 @@
 #include <stdint.h>
 
 #ifdef _WIN32
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  * @brief Seek to a 64-bit offset in a file stream (Windows).
  * @param stream  File stream
@@ -18,6 +21,9 @@
  * @return 0 on success, non-zero on error
  */
 int xbt_fseek64(FILE *stream, int64_t offset, int whence);
+#ifdef __cplusplus
+}
+#endif
 #else
 #include <sys/types.h>
 /**
