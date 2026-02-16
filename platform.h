@@ -1,7 +1,7 @@
 /**
  * @file platform.h
  * @brief Platform abstraction for 64-bit file seek (and later: mkdir, getopt on Windows).
- * Linux/macOS: fseeko64. Windows: _fseeki64 (when adding Windows support).
+ * macOS: fseeko; Linux: fseeko64. Windows: _fseeki64.
  */
 #ifndef PLATFORM_H
 #define PLATFORM_H
@@ -27,10 +27,17 @@ int xbt_fseek64(FILE *stream, int64_t offset, int whence);
  * @param whence  SEEK_SET, SEEK_CUR, or SEEK_END
  * @return 0 on success, non-zero on error
  */
+#ifdef __APPLE__
+static inline int xbt_fseek64(FILE *stream, int64_t offset, int whence)
+{
+    return fseeko(stream, (off_t)offset, whence);
+}
+#else
 static inline int xbt_fseek64(FILE *stream, int64_t offset, int whence)
 {
     return fseeko64(stream, (off_t)offset, whence);
 }
+#endif
 #endif
 
 #endif
