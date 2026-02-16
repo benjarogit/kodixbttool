@@ -31,8 +31,45 @@ Fertige Binaries für **Linux**, **macOS** und **Windows** gibt es in den [Relea
 2. Linux/macOS: ausführbar machen (`chmod +x kodixbttool-linux-x64` bzw. `chmod +x kodixbttool-macos`), dann im Terminal mit deinen Pfaden starten (siehe [Nutzung](#nutzung) unten).
 3. Windows: `kodixbttool-windows-x64.exe` in Eingabeaufforderung oder PowerShell mit den gewünschten Pfaden ausführen.
 
-Es gibt keine Konfigurationsdatei: Ein- und Ausgabepfade werden immer in der Kommandozeile übergeben. Beispiele:  
-`kodixbttool -o ./out -c ./Textures.xbt` (entpacken) oder `kodixbttool --pack -i ./out -o ./Textures.xbt` (packen).
+**Es gibt keine Konfigurationsdatei.** Du gibst die Pfade immer in derselben Zeile wie den Befehl ein. Unten stehen Copy-paste-Beispiele – ersetze die Pfade durch **deine** Pfade.
+
+**Beispiel – eine .xbt in einen Ordner entpacken (Linux/macOS):**
+```bash
+./kodixbttool-linux-x64 -o ./Textures_extracted -c ./Textures.xbt
+```
+Bedeutung: Nimm `Textures.xbt` im aktuellen Ordner und entpacke sie in den neuen Ordner `Textures_extracted`.
+
+**Beispiel – dasselbe unter Windows (Eingabeaufforderung oder PowerShell):**
+```powershell
+.\kodixbttool-windows-x64.exe -o .\Textures_extracted -c .\Textures.xbt
+```
+
+**Beispiel – einen Ordner wieder in eine .xbt packen (Linux/macOS):**
+```bash
+./kodixbttool-linux-x64 --pack -i ./Textures_extracted -o ./Textures.xbt
+```
+Bedeutung: Nimm den Ordner `Textures_extracted` und erzeuge daraus `Textures.xbt`. Danach wird der Ordner gelöscht, außer du fügst `--no-remove-input` hinzu.
+
+**Beispiel – dasselbe unter Windows:**
+```powershell
+.\kodixbttool-windows-x64.exe --pack -i .\Textures_extracted -o .\Textures.xbt
+```
+
+**Beispiel – nur anzeigen, was in einer .xbt steckt (ohne Entpacken):**
+```bash
+./kodixbttool-linux-x64 -p ./Textures.xbt
+```
+Windows: `.\kodixbttool-windows-x64.exe -p .\Textures.xbt`
+
+**Beispiel – anzeigen, welche Texturen im Skin nicht genutzt werden (kannst du vor dem Packen entfernen):**
+```bash
+./kodixbttool-linux-x64 --list-unused -i ./Textures_extracted
+```
+Windows: `.\kodixbttool-windows-x64.exe --list-unused -i .\Textures_extracted`
+
+Wenn deine .xbt oder dein Ordner woanders liegt, nutze den vollen Pfad, z. B.  
+Linux: `-c /home/du/.kodi/addons/skin.dokukanal/media/Textures.xbt`  
+Windows: `-c C:\Users\Du\AppData\Roaming\Kodi\addons\skin.dokukanal\media\Textures.xbt`
 
 ## Voraussetzungen (nur zum Bauen aus dem Quellcode)
 
@@ -81,19 +118,17 @@ Das Binary liegt unter `build\Release\kodixbttool.exe`. **Einfacher:** [fertiges
 
 Wie unter Linux; Pakete für deine WSL-Distribution (z. B. Ubuntu) wie oben installieren.
 
-## Pfade und Nutzung
+## Wo liegen meine .xbt-Dateien?
 
-**Wie die Pfade funktionieren:** Das Tool **fragt dich beim Start nicht** nach Pfaden. Es gibt **keine Konfigurationsdatei**. Du übergibst alle Pfade immer in der Kommandozeile: welche .xbt-Datei oder welcher Ordner rein soll, wohin ausgepackt oder gepackt werden soll. Die .xbt-Dateien können beliebig liegen; du kannst volle oder relative Pfade angeben, z. B. `./Textures.xbt` oder `C:\Kodi\addons\skin.mein\media\Textures.xbt`.
+Kodi-Skins speichern die Textur-Archive im **media**-Ordner des Skins. Typische Orte (ersetze `skin.NAME` durch deinen Skin, z. B. `skin.dokukanal`):
 
-**Typischer Kodi-Skin-Medienordner** (dort liegen meist `Textures.xbt` und `Square.xbt`):
-
-| Plattform | Typischer Pfad |
-|-----------|-----------------|
+| Plattform | Pfad zum Ordner mit Textures.xbt / Square.xbt |
+|-----------|------------------------------------------------|
 | Linux     | `~/.kodi/addons/skin.NAME/media/` |
 | macOS     | `~/Library/Application Support/Kodi/addons/skin.NAME/media/` |
-| Windows   | `%APPDATA%\Kodi\addons\skin.NAME\media\` (z. B. `C:\Users\Du\AppData\Roaming\Kodi\addons\...`) |
+| Windows   | `C:\Users\DEINNAME\AppData\Roaming\Kodi\addons\skin.NAME\media\` |
 
-Ersetze `skin.NAME` durch den Addon-Ordner deines Skins (z. B. `skin.dokukanal`). Terminal (bzw. Eingabeaufforderung/PowerShell unter Windows) öffnen und die Befehle mit **deinen** Pfaden ausführen.
+Terminal (Linux/macOS) oder Eingabeaufforderung/PowerShell (Windows) öffnen, in diesen Ordner wechseln (`cd` mit dem Pfad oben), dann die [Copy-paste-Beispiele](#downloads-empfohlen) aus dem Download-Abschnitt mit deinen Dateinamen nutzen.
 
 ## Bauen aus dem Quellcode (optional)
 
@@ -127,90 +162,95 @@ Anschließend `./kodixbttool --help` ausführen. Unter Windows mit vcpkg das **x
 
 ## Nutzung
 
-**Kurz starten (Beispiel Linux, Skin unter `~/.kodi/addons/skin.dokukanal/media/`):**
+### Das erste Mal? Kompletter Ablauf (copy-paste und Pfade anpassen)
+
+**Linux / macOS** (z. B. Skin unter `~/.kodi/addons/skin.dokukanal/media/`):
 
 ```bash
-# 1) In den Skin-Medienordner wechseln (oder in den Befehlen unten volle Pfade nutzen)
 cd ~/.kodi/addons/skin.dokukanal/media
-
-# 2) Beide Archive auspacken (erzeugt Textures_extracted und Square_extracted)
-./kodixbttool -o ./Textures_extracted -c ./Textures.xbt
-./kodixbttool -o ./Square_extracted -c ./Square.xbt
-
-# 3) Optional: anzeigen, welche Texturen im Skin nicht genutzt werden
-./kodixbttool --list-unused -i ./Textures_extracted
-
-# 4) Wieder packen (z. B. nach Bearbeitung). Es wird gefragt, ob Unbenutzte entfernt werden sollen.
-./kodixbttool --pack -i ./Textures_extracted -o ./Textures.xbt
-./kodixbttool --pack -i ./Square_extracted -o ./Square.xbt
+./kodixbttool-linux-x64 -o ./Textures_extracted -c ./Textures.xbt
+# Jetzt die Bilder in ./Textures_extracted mit einem Bildprogramm bearbeiten.
+./kodixbttool-linux-x64 --list-unused -i ./Textures_extracted
+# Optional: das Tool fragt „Unbenutzte vor dem Packen entfernen? (j/N)“ – j oder n antworten.
+./kodixbttool-linux-x64 --pack -i ./Textures_extracted -o ./Textures.xbt
 ```
 
-Wenn du die fertige Binärdatei heruntergeladen hast: Pfad zum Tool angeben (z. B. `~/Downloads/kodixbttool`) oder ins PATH legen und `kodixbttool` von überall aufrufen.
+**Windows** (z. B. Skin unter `C:\Users\Du\AppData\Roaming\Kodi\addons\skin.dokukanal\media\`):
+
+```powershell
+cd $env:APPDATA\Kodi\addons\skin.dokukanal\media
+.\kodixbttool-windows-x64.exe -o .\Textures_extracted -c .\Textures.xbt
+# Jetzt die Bilder in .\Textures_extracted mit einem Bildprogramm bearbeiten.
+.\kodixbttool-windows-x64.exe --list-unused -i .\Textures_extracted
+.\kodixbttool-windows-x64.exe --pack -i .\Textures_extracted -o .\Textures.xbt
+```
+
+Wenn das Tool woanders liegt (z. B. Downloads), den vollen Pfad angeben, z. B.  
+`~/Downloads/kodixbttool-linux-x64` oder `C:\Users\Du\Downloads\kodixbttool-windows-x64.exe`.
 
 ### Extrahieren
 
-Alles auspacken und Verzeichnisbaum anlegen (mit **deinen** Pfaden):
+**Eine .xbt in einen neuen Ordner entpacken** (alle Bilder und Ordnerstruktur):
 
-```bash
-kodixbttool -o ./media/Textures_extracted -c media/Textures.xbt
-```
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 -o ./Textures_extracted -c ./Textures.xbt` | `.\kodixbttool-windows-x64.exe -o .\Textures_extracted -c .\Textures.xbt` |
 
-Nur Pfade anzeigen:
+**Nur Pfade anzeigen**, die in der .xbt stecken (ohne Entpacken):
 
-```bash
-kodixbttool -p media/Textures.xbt
-```
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 -p ./Textures.xbt` | `.\kodixbttool-windows-x64.exe -p .\Textures.xbt` |
 
-Einzelne Datei extrahieren:
+**Eine einzelne Datei** aus der .xbt extrahieren (z. B. ein Bild):
 
-```bash
-kodixbttool -o ./out -c -f pfad/innen/file.png media/Textures.xbt
-```
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 -o ./out -c -f pfad/innen/name.png ./Textures.xbt` | `.\kodixbttool-windows-x64.exe -o .\out -c -f pfad\innen\name.png .\Textures.xbt` |
+
+Den Pfad so verwenden, wie er bei `-p` angezeigt wird.
 
 ### Packen
 
-Verzeichnis mit Bildern in eine `.xbt` packen:
+**Einen Bild-Ordner in eine .xbt packen:**
 
-```bash
-kodixbttool --pack -i ./media/Textures_extracted -o ./media/Textures.xbt
-```
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 --pack -i ./Textures_extracted -o ./Textures.xbt` | `.\kodixbttool-windows-x64.exe --pack -i .\Textures_extracted -o .\Textures.xbt` |
 
-Mit `--dupecheck` werden identische Bilddaten nur einmal gespeichert (kleinere Datei):
+Nach erfolgreichem Packen wird der Ordner (`Textures_extracted`) **standardmäßig gelöscht**. Zum Behalten `--no-remove-input` anhängen:
 
-```bash
-kodixbttool --pack -i ./media/Textures_extracted -o ./media/Textures.xbt --dupecheck
-```
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 --pack -i ./Textures_extracted -o ./Textures.xbt --no-remove-input` | `.\kodixbttool-windows-x64.exe --pack -i .\Textures_extracted -o .\Textures.xbt --no-remove-input` |
 
-Nach erfolgreichem Packen wird das Eingabeverzeichnis **standardmäßig gelöscht**, damit es nicht mit Skin/Add-on mitgeliefert wird. Mit `--no-remove-input` bleibt es erhalten.
+**Kleinere Datei** (gleiche Bilder nur einmal): `--dupecheck` anhängen:
 
-**Typischer Ablauf:** Extrahieren → Bilder bearbeiten → packen (Eingabeordner wird automatisch gelöscht):
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 --pack -i ./Textures_extracted -o ./Textures.xbt --dupecheck` | `.\kodixbttool-windows-x64.exe --pack -i .\Textures_extracted -o .\Textures.xbt --dupecheck` |
 
-```bash
-kodixbttool -o ./media/Textures_extracted -c media/Textures.xbt
-# ... Dateien in media/Textures_extracted bearbeiten ...
-kodixbttool --pack -i ./media/Textures_extracted -o ./media/Textures.xbt
-```
+### Unbenutzte Texturen
 
-### Unbenutzte Texturen (cross-platform)
+**Anzeigen**, welche Texturen im extrahierten Ordner im Skin **nicht** genutzt werden (zum Verkleinern vor dem Packen):
 
-Texturen im extrahierten Ordner anzeigen, die **nicht** in den Skin-XMLs vorkommen. Skin-Pfad: `KODI_ADDONS` oder `$HOME/.kodi/addons/skin.dokukanal` (Windows: `%USERPROFILE%\.kodi\addons\skin.dokukanal`), oder mit `--skin-dir` setzen:
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 --list-unused -i ./Textures_extracted` | `.\kodixbttool-windows-x64.exe --list-unused -i .\Textures_extracted` |
 
-```bash
-kodixbttool --list-unused -i ./media/Textures_extracted
-kodixbttool --list-unused -i ./media/Textures_extracted --skin-dir=/pfad/zu/skin.dokukanal
-```
+Das Tool sucht den Skin am Standardort (z. B. `~/.kodi/addons/skin.dokukanal`). Liegt dein Skin woanders, explizit angeben:
 
-Beim **Packen** kann das Tool unbenutzte Texturen vor dem Packen entfernen, wenn ein Skin-Verzeichnis gefunden wird:
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 --list-unused -i ./Textures_extracted --skin-dir=/pfad/zu/skin.dokukanal` | `.\kodixbttool-windows-x64.exe --list-unused -i .\Textures_extracted --skin-dir=C:\pfad\zu\skin.dokukanal` |
 
-- **Interaktiv:** Bei TTY erscheint: *„N unbenutzte Textur(en). Vor dem Packen entfernen? (j/N)“* – mit `j` werden sie gelöscht, dann gepackt.
-- **Ohne Abfrage:** `--remove-unused` entfernt unbenutzte ohne Nachfrage, `--no-remove-unused` entfernt nie (z. B. in Skripten/CI).
+**Beim Packen** kann das Tool unbenutzte Texturen vorher entfernen.  
+- Es fragt ggf.: *„N unbenutzte Textur(en). Vor dem Packen entfernen? (j/N)“* – mit `j` oder `n` antworten.  
+- Oder erzwingen: `--remove-unused` (immer entfernen) oder `--no-remove-unused` (nie entfernen).
 
-Pfade die mit `default` beginnen (Kodi-Fallback-Icons) werden nie als unbenutzt gelistet und nicht gelöscht.
-
-```bash
-kodixbttool --pack -i ./media/Textures_extracted -o ./media/Textures.xbt --remove-unused
-kodixbttool --pack -i ./media/Textures_extracted -o ./media/Textures.xbt --no-remove-unused
-```
+| Linux/macOS | Windows |
+|-------------|---------|
+| `./kodixbttool-linux-x64 --pack -i ./Textures_extracted -o ./Textures.xbt --remove-unused` | `.\kodixbttool-windows-x64.exe --pack -i .\Textures_extracted -o .\Textures.xbt --remove-unused` |
 
 ## Referenzen
 
