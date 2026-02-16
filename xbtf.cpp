@@ -1,24 +1,25 @@
 /*
- * Copyright (C) 2012 Lars Hall
+ * Based on xbtfextractor (C) 2012 Lars Hall.
+ * This variant kodixbttool (C) 2026 Sunny C.
  *
- * This file is part of xbtfextractor.
- *
- * xbtfextractor is free software: you can redistribute it and/or modify
+ * kodixbttool is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * xbtfextractor is distributed in the hope that it will be useful,
+ * kodixbttool is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with xbtfextractor.  If not, see <http://www.gnu.org/licenses/>.
+ * along with kodixbttool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "xbtf.h"
+#include "platform.h"
 
+/** @brief Initialize LZO; sets fileOpened to false. */
 Xbtf::Xbtf()
 {
     fileOpened = false;
@@ -26,6 +27,7 @@ Xbtf::Xbtf()
         fprintf(stderr, "Cannot initialize lzo\n");
 }
 
+/** @brief Open .xbt and read header. @return true on success. */
 bool Xbtf::open(const char *filename)
 {
     file = fopen (filename, "rb");
@@ -40,11 +42,13 @@ bool Xbtf::open(const char *filename)
     return readHeader();
 }
 
+/** @brief Parse full file list and frame metadata. @return true on success. */
 bool Xbtf::parse()
 {
     return readMeta();
 }
 
+/** @brief Read XBTF magic and version. @return true if valid. */
 bool Xbtf::readHeader()
 {
     char magic[4];
@@ -62,6 +66,7 @@ bool Xbtf::readHeader()
     return true;
 }
 
+/** @brief Read file count and all MediaFile/frame metadata. @return true on success. */
 bool Xbtf::readMeta()
 {
     uint32_t numFiles = readU32();
@@ -106,11 +111,13 @@ bool Xbtf::readMeta()
     return true;
 }
 
+/** @brief Read size bytes from file into buf. */
 void Xbtf::readStr(char *buf, size_t size)
 {
     fread(buf, size, 1, file);
 }
 
+/** @brief Read little-endian 32-bit value. */
 uint32_t Xbtf::readU32()
 {
     uint64_t ret;
@@ -118,6 +125,7 @@ uint32_t Xbtf::readU32()
     return ret;
 }
 
+/** @brief Read little-endian 64-bit value. */
 uint64_t Xbtf::readU64()
 {
     uint64_t ret;
@@ -125,7 +133,7 @@ uint64_t Xbtf::readU64()
     return ret;
 }
 
-// TODO: Support unicode?
+/** @brief Split fullPath into path, filename, and set fileType from extension. */
 void Xbtf::parsePath(MediaFile &mediaFile)
 {
     int fullLen = strnlen(mediaFile.fullPath, sizeof(mediaFile.fullPath));
@@ -172,6 +180,7 @@ void Xbtf::parsePath(MediaFile &mediaFile)
         mediaFile.fileType = MediaFile::GIF;
 }
 
+/** @brief Create directory path and parents; use cache to avoid repeated stat. @return true on success. */
 bool Xbtf::createPath(const char *path)
 {
     char *pp, *sp;
@@ -207,10 +216,14 @@ bool Xbtf::createPath(const char *path)
         }
         pp = sp + 1;
     }
+    /* create final segment (e.g. out_test/common when path has no further slash) */
+    if (status == 0 && *pp)
+        status = makeDir(tmpPath);
 
     return status == 0;
 }
 
+/** @brief Create single directory with common permissions. @return 0 on success. */
 int Xbtf::makeDir(const char *dir)
 {
     struct stat info;
@@ -225,6 +238,7 @@ int Xbtf::makeDir(const char *dir)
     return status;
 }
 
+/** @brief Check if path was already created (cached). */
 bool Xbtf::isPathInCache(const char *path)
 {
     PathCache::const_iterator it;
@@ -232,14 +246,14 @@ bool Xbtf::isPathInCache(const char *path)
     return it != pathCache.end();
 }
 
-
+/** @brief Decompress one frame (LZO or copy) into dst. @return true on success. */
 bool Xbtf::uncompressFrame(unsigned char *dst, const Frame &frame)
 {
     bool ret = true;
     unsigned char *packed = new unsigned char[frame.packed];
     memset(packed, 0, frame.packed);
 
-    if (fseeko64(file, (off_t)frame.offset, SEEK_SET) == -1)
+    if (xbt_fseek64(file, (int64_t)frame.offset, SEEK_SET) == -1)
     {
         fprintf(stderr, "Cannot seek to location\n");
         ret = false;;
@@ -266,6 +280,7 @@ bool Xbtf::uncompressFrame(unsigned char *dst, const Frame &frame)
     return ret;
 }
 
+/** @brief Decompress DXT1/DXT3/DXT5 frame in-place. */
 bool Xbtf::decompressDXT(unsigned char *data,
     unsigned int len, const Frame &frame)
 {
@@ -296,6 +311,7 @@ bool Xbtf::decompressDXT(unsigned char *data,
     return true;
 }
 
+/** @brief Extract every file to dst. */
 void Xbtf::extractAllFiles(const char *dst, bool createDirs)
 {
     MediaFiles::iterator it;
@@ -303,6 +319,7 @@ void Xbtf::extractAllFiles(const char *dst, bool createDirs)
         extractMediaFile(it->second, dst, createDirs);
 }
 
+/** @brief Extract one file by path inside the .xbt. */
 void Xbtf::extractFile(const char *filename, const char *dst, bool createDirs)
 {
     MediaFiles::iterator it;
@@ -313,58 +330,65 @@ void Xbtf::extractFile(const char *filename, const char *dst, bool createDirs)
         fprintf(stderr, "Cannot extract file: %s. File not found", filename);
 }
 
+/** @brief Extract one media file (all frames) to dst; create dirs if createDirs. Writes PNG/JPEG/GIF. */
 void Xbtf::extractMediaFile(MediaFile &mediaFile,
     const char *dst, bool createDirs)
 {
+    parsePath(mediaFile);
+
     for (unsigned int i = 0; i < mediaFile.frames.size(); i++)
     {
         unsigned int len = 0;
-        // Give enough room in data buffer if unpacked data
-        // is in a compressed DXT format
         if (mediaFile.frames[i].format & XB_FMT_DXT_MASK)
-        {
-            // TODO: width * height * 4 apparently isn't enough although it
-            // is stated in libsquish's example
-            // I hope this is enough.. otherwise it fails with a bang :)
             len = mediaFile.frames[i].width * mediaFile.frames[i].height * 10;
-        }
         else
             len = mediaFile.frames[i].unpacked;
-       
+
         fprintf(stderr, "Extracting file: %s\n", mediaFile.fullPath);
         unsigned char *data = new unsigned char[len];
         uncompressFrame(data, mediaFile.frames[i]);
-        parsePath(mediaFile);
 
-
-        // Decompress DXT if relevant
         if (mediaFile.frames[i].format & XB_FMT_DXT_MASK)
         {
             decompressDXT(data, len, mediaFile.frames[i]);
-            // Not pretty: updates the unpacked size, so it's the size
-            // of the uncompressed DXT and NOT the uncompressed lzo
             mediaFile.frames[i].unpacked = len;
         }
 
-        // Give enough room for appending xbtf file path
-        // to destination path
         char dstPath[MAX_STR * 2];
+        size_t dlen = strnlen(dst, MAX_STR * 2 - 1);
+        if (dlen >= MAX_STR * 2) dlen = MAX_STR * 2 - 1;
         strncpy(dstPath, dst, MAX_STR * 2);
-        if (dstPath[strnlen(dst, MAX_STR) - 1] != '/')
-            dstPath[strnlen(dst, MAX_STR)] = '/';
+        dstPath[MAX_STR * 2 - 1] = '\0';
+        if (dlen > 0 && dstPath[dlen - 1] != '/')
+        {
+            dstPath[dlen] = '/';
+            dstPath[dlen + 1] = '\0';
+            dlen++;
+        }
+        size_t pathRoom = (MAX_STR * 2) - dlen - 1;
+        strncat(dstPath, mediaFile.path, pathRoom);
+        dstPath[MAX_STR * 2 - 1] = '\0';
+        dlen = strnlen(dstPath, MAX_STR * 2);
+        pathRoom = (MAX_STR * 2) - dlen - 1;
+        strncat(dstPath, mediaFile.filename, pathRoom);
 
-        strncat(dstPath, mediaFile.path, MAX_STR * 2);
-        // Create dirs if needed
         if (createDirs)
         {
-            if (!createPath(dstPath))
+            char dirPath[MAX_STR * 2];
+            strncpy(dirPath, dstPath, MAX_STR * 2 - 1);
+            dirPath[MAX_STR * 2 - 1] = '\0';
+            char *lastSlash = strrchr(dirPath, '/');
+            if (lastSlash && lastSlash > dirPath)
             {
-                fprintf(stderr, "Cannot create dir:%s\n", dstPath);
-                break;
+                *lastSlash = '\0';
+                if (!createPath(dirPath))
+                {
+                    fprintf(stderr, "Cannot create dir:%s\n", dirPath);
+                    delete [] data;
+                    break;
+                }
             }
         }
-
-        strncat(dstPath, mediaFile.filename, sizeof(mediaFile.filename));
 
         switch(mediaFile.fileType)
         {
@@ -383,29 +407,27 @@ void Xbtf::extractMediaFile(MediaFile &mediaFile,
     }
 }
 
+/** @brief Compute row stride and hasAlpha from frame format (for PNG/JPEG export). */
+void Xbtf::getStrideAndAlpha(const Frame &frame, unsigned int &stride, bool &hasAlpha) const
+{
+    hasAlpha = (frame.format != XB_FMT_RGB8);
+    stride = frame.width * (hasAlpha ? 4 : 3);
+}
+
+/** @brief Write frame as JPEG to filename. @return true on success. */
 bool Xbtf::compressJpeg(const Frame &frame, unsigned char *data,
     const char *filename)
 {
-    unsigned int stride = frame.width;
-    bool hasAlpha = true;
-
-    if (frame.format == XB_FMT_RGB8)
-    {
-        hasAlpha = false;
-        stride *= 3; 
-    }
-    else
-    {
-        hasAlpha = true;
-        stride *= 4;
-    }
+    unsigned int stride;
+    bool hasAlpha;
+    getStrideAndAlpha(frame, stride, hasAlpha);
 
     // FIXME: Check that this can be open and written to
     FILE *jpegFile = fopen(filename, "wb");
 
     if (jpegFile == NULL)
     {
-        fprintf(stderr, "Cannot create png file%s\n", filename);
+        fprintf(stderr, "Cannot create jpeg file: %s\n", filename);
         return false;
     }
 
@@ -456,22 +478,13 @@ bool Xbtf::compressJpeg(const Frame &frame, unsigned char *data,
     return true;
 }
 
+/** @brief Write frame as PNG to filename. @return true on success. */
 bool Xbtf::compressPng(const Frame &frame, unsigned char *data,
     const char *filename)
 {
-    unsigned int stride = frame.width;
-    bool hasAlpha = true;
-
-    if (frame.format == XB_FMT_RGB8)
-    {
-        hasAlpha = false;
-        stride *= 3; 
-    }
-    else
-    {
-        hasAlpha = true;
-        stride *= 4;
-    }
+    unsigned int stride;
+    bool hasAlpha;
+    getStrideAndAlpha(frame, stride, hasAlpha);
 
     FILE *pngFile = fopen(filename, "wb");
     if (!pngFile)
@@ -555,96 +568,17 @@ bool Xbtf::compressPng(const Frame &frame, unsigned char *data,
     return true;
 }
 
-// TODO: Implement alpha and animation support
+/** @brief Stub: GIF extraction not supported with giflib 5.x. Always returns false. */
 bool Xbtf::compressGif(const Frame &frame, unsigned char *data,
     const char *filename)
 {
-    int colorMapSize = 256;
-    int expNumOfColors = 8;
-    bool hasAlpha = true;
-
-    if (frame.format == XB_FMT_RGB8)
-        hasAlpha = false;
-    else
-        hasAlpha = true;
-
-    GifFileType *gifFile = EGifOpenFileName(filename, 0);
-    if (gifFile == NULL)
-    {
-        fprintf(stderr, "Cannot create gif file: %s\n", filename);
-        return false;
-    }
-
-    ColorMapObject *colorMap = MakeMapObject(colorMapSize, NULL);
-
-    GifByteType *buffer = (GifByteType *)malloc(
-        sizeof(GifFileType) * frame.width * frame.height*3);
-    colorMapSize = 1 << expNumOfColors;
-    
-    GifByteType *red, *green, *blue;
-    red = buffer;
-    green = buffer + frame.width * frame.height;
-    blue = buffer + frame.width * frame.height * 2;
-
-    GifByteType *datap = data;
-    GifByteType *rp = red, *gp = green, *bp = blue;
-
-    for (unsigned int i = 0; i < frame.width; i++)
-    {
-        for (unsigned int j = 0; j < frame.height; j++)
-        {
-            *rp++ = *datap++;
-            *gp++ = *datap++;
-            *bp++ = *datap++;
-            if (hasAlpha)
-                datap++;
-        }
-    }
-
-    GifByteType *outputBuffer = (GifByteType *) malloc(
-        frame.width * frame.height * sizeof(GifByteType));
-
-    if (QuantizeBuffer(frame.width, frame.height, &colorMapSize,
-        red, green, blue,
-        outputBuffer, colorMap->Colors) == GIF_ERROR)
-    {
-        fprintf(stderr, "QuantizeBuffer error\n");
-        free(buffer);
-        return false;
-    }
-
-    //EGifSetGifVersion("89a");
-    if (EGifPutScreenDesc(gifFile, frame.width, frame.height,
-        expNumOfColors, 0, colorMap) == GIF_ERROR)
-    {
-        fprintf(stderr, "compress error putscreendesc\n");
-        free(buffer);
-        return false;
-    }
-
-    if (EGifPutImageDesc(gifFile, 0, 0, frame.width,
-        frame.height, false, colorMap) == GIF_ERROR)
-    {
-        fprintf(stderr, "GIF error!\n");
-        free(buffer);
-        return false;
-    }
-
-    GifByteType *ptmp  = outputBuffer;
-    for (unsigned int i = 0; i < frame.height; i++)
-    {
-        if (EGifPutLine(gifFile, ptmp, frame.width) == GIF_ERROR)
-            fprintf(stderr, "Compress failed\n");
-        ptmp += frame.width;
-    }
-
-    free(buffer);
-    free(outputBuffer);
-    EGifCloseFile(gifFile);
-
-    return true;
+    (void)frame;
+    (void)data;
+    fprintf(stderr, "GIF extraction not supported with giflib 5.x (skipped): %s\n", filename);
+    return false;
 }
 
+/** @brief Print all fullPath entries to stdout. */
 void Xbtf::printFiles()
 {
     MediaFiles::iterator it;

@@ -1,0 +1,6 @@
+kodixbttool
+*.o
+*.obj
+build/
+testdata/
+*.xbt.bak

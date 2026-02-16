@@ -1,0 +1,36 @@
+/**
+ * @file platform.h
+ * @brief Platform abstraction for 64-bit file seek (and later: mkdir, getopt on Windows).
+ * Linux/macOS: fseeko64. Windows: _fseeki64 (when adding Windows support).
+ */
+#ifndef PLATFORM_H
+#define PLATFORM_H
+
+#include <stdio.h>
+#include <stdint.h>
+
+#ifdef _WIN32
+/**
+ * @brief Seek to a 64-bit offset in a file stream (Windows).
+ * @param stream  File stream
+ * @param offset  Offset in bytes
+ * @param whence  SEEK_SET, SEEK_CUR, or SEEK_END
+ * @return 0 on success, non-zero on error
+ */
+int xbt_fseek64(FILE *stream, int64_t offset, int whence);
+#else
+#include <sys/types.h>
+/**
+ * @brief Seek to a 64-bit offset in a file stream (Linux/macOS).
+ * @param stream  File stream
+ * @param offset  Offset in bytes
+ * @param whence  SEEK_SET, SEEK_CUR, or SEEK_END
+ * @return 0 on success, non-zero on error
+ */
+static inline int xbt_fseek64(FILE *stream, int64_t offset, int whence)
+{
+    return fseeko64(stream, (off_t)offset, whence);
+}
+#endif
+
+#endif

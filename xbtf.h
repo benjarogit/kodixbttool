@@ -1,20 +1,25 @@
 /*
- * Copyright (C) 2012 Lars Hall
+ * Based on xbtfextractor (C) 2012 Lars Hall.
+ * This variant kodixbttool (C) 2026 Sunny C.
  *
- * This file is part of xbtfextractor.
- *
- * xbtfextractor is free software: you can redistribute it and/or modify
+ * kodixbttool is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * xbtfextractor is distributed in the hope that it will be useful,
+ * kodixbttool is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with xbtfextractor.  If not, see <http://www.gnu.org/licenses/>.
+ * along with kodixbttool.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * XBT format: packed .xbt files are readable by Kodi 17+ and Omega 21 (XBT v2, A8R8G8B8/RGB8).
+ */
+
+/** @file xbtf.h
+ * @brief XBT archive reader: open, parse, extract to PNG/JPEG, list paths (Kodi 17+ / Omega 21).
  */
 
 #ifndef XBTF_H
@@ -58,6 +63,7 @@ using std::vector;
 using std::map;
 using std::make_pair;
 
+/** Single frame metadata and optional pixel data (XBT format; Kodi 17+ / Omega 21). */
 struct Frame
 {
     uint32_t width;
@@ -70,6 +76,7 @@ struct Frame
     uint8_t *bytes;
 };
 
+/** One logical file in an XBT (path, type, list of frames). */
 struct MediaFile 
 {
     enum FileType
@@ -88,7 +95,7 @@ struct MediaFile
     vector<Frame> frames;
 };
 
-// C string compare for keys in map
+/** C string comparator for map keys (char*). */
 struct strCmp
 {
     bool operator()(char const *a, char const *b) const
@@ -97,6 +104,10 @@ struct strCmp
     }
 };
 
+/**
+ * @brief Reader for Kodi XBT texture archives (extract, list).
+ * Opens an .xbt file, parses metadata, and can extract to PNG/JPEG or print paths.
+ */
 class Xbtf
 {
     private:
@@ -131,6 +142,7 @@ class Xbtf
         bool decompressDXT(unsigned char *data,
             unsigned int len, const Frame &frame);
 
+        void getStrideAndAlpha(const Frame &frame, unsigned int &stride, bool &hasAlpha) const;
         bool compressJpeg(const Frame &frame, unsigned char *data,
             const char *filename);
         bool compressPng(const Frame &frame, unsigned char *data,
@@ -143,11 +155,16 @@ class Xbtf
         Xbtf();
         ~Xbtf();
 
+        /** @brief Open an .xbt file and read header. @param filename Path to .xbt. @return true on success. */
         bool open(const char *filename);
+        /** @brief Parse full metadata (file list and frame info). @return true on success. */
         bool parse();
+        /** @brief Extract one file by path. @param filename Path inside the .xbt. @param dst Output directory. @param createDirs Create directory tree. */
         void extractFile(const char *filename,
             const char *dst, bool createDirs);
+        /** @brief Extract all files. @param dst Output directory. @param createDirs Create directory tree. */
         void extractAllFiles(const char *dst, bool createDirs);
+        /** @brief Print all file paths in the .xbt to stdout. */
         void printFiles();
 };
 

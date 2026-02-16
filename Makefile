@@ -3,10 +3,10 @@ CXXFLAGS =-Wall -g
 
 
 INCLUDES = xbtf.h
-SOURCES = main.cpp xbtf.cpp
+SOURCES = main.cpp xbtf.cpp xbtf_pack.cpp skin_unused.cpp
 
 OBJECTS = $(SOURCES:.cpp=.o)
-EXECUTABLE = xbtfextractor
+EXECUTABLE = kodixbttool
 
 all: $(SOURCES) $(EXECUTABLE)
 
