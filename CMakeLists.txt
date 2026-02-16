@@ -21,11 +21,18 @@ find_package(PNG REQUIRED)
 find_package(JPEG REQUIRED)
 
 if(WIN32)
-    # vcpkg's lzo port does not provide FindLZO/LZOConfig; use find_library/find_path like on macOS
+    # vcpkg's lzo port does not provide FindLZO/LZOConfig; use find_library/find_path.
+    # Explicitly search CMAKE_PREFIX_PATH (set by vcpkg toolchain) so vcpkg-installed LZO is found.
     find_package(GIF REQUIRED)
     find_package(libsquish CONFIG REQUIRED)
-    find_library(LZO2_LIB NAMES lzo2 lzo)
-    find_path(LZO2_INCLUDE NAMES lzo/lzo1x.h)
+    find_library(LZO2_LIB NAMES lzo2 lzo
+        PATHS ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES lib
+        NO_DEFAULT_PATH)
+    find_path(LZO2_INCLUDE NAMES lzo/lzo1x.h
+        PATHS ${CMAKE_PREFIX_PATH}
+        PATH_SUFFIXES include
+        NO_DEFAULT_PATH)
     if(NOT LZO2_LIB OR NOT LZO2_INCLUDE)
         message(FATAL_ERROR "LZO not found. Install with: vcpkg install lzo")
     endif()
