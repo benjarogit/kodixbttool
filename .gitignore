@@ -5,3 +5,7 @@ build/
 testdata/
 *.xbt.bak
 *.code-workspace
+# Vale (local style/spelling only, not for the repo)
+.vale/
+.vale.ini
+.valeignore
