@@ -43,12 +43,14 @@ jobs:
       - name: Bootstrap vcpkg (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
-        run: "${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh"
+        run: |
+          "${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh"
 
       - name: Install vcpkg dependencies (Windows)
         if: matrix.os == 'windows-latest'
         shell: bash
-        run: "${{ github.workspace }}/vcpkg/vcpkg" install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
+        run: |
+          "${{ github.workspace }}/vcpkg/vcpkg" install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
 
       - name: Build (Linux/macOS)
         if: matrix.os != 'windows-latest'
