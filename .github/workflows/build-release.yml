@@ -62,6 +62,7 @@ jobs:
       - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event.release.tag_name }}
           files: |
             kodixbttool-linux-x64
             kodixbttool-macos
