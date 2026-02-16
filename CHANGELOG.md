@@ -6,7 +6,7 @@ All notable changes in this variant compared to the original **xbtfextractor** (
 
 ## [Unreleased]
 
-(No planned items.)
+- **Repo:** Workspace file `kodixbttool.code-workspace` removed from repo (local use only; added to `.gitignore`).
 
 ---
 

@@ -4,3 +4,4 @@ kodixbttool
 build/
 testdata/
 *.xbt.bak
+*.code-workspace
