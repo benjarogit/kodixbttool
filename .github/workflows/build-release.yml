@@ -33,13 +33,22 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install cmake lzo libpng libjpeg-turbo giflib libsquish
 
-      - name: Install vcpkg and dependencies (Windows)
+      - name: Checkout vcpkg (Windows)
         if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP/vcpkg"
-          & "$env:RUNNER_TEMP/vcpkg/bootstrap-vcpkg.bat"
-          & "$env:RUNNER_TEMP/vcpkg/vcpkg" install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
+        uses: actions/checkout@v4
+        with:
+          repository: microsoft/vcpkg
+          path: vcpkg
+
+      - name: Bootstrap vcpkg (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: "${{ github.workspace }}/vcpkg/bootstrap-vcpkg.sh"
+
+      - name: Install vcpkg dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: "${{ github.workspace }}/vcpkg/vcpkg" install libpng libjpeg-turbo lzo giflib libsquish --triplet x64-windows-static
 
       - name: Build (Linux/macOS)
         if: matrix.os != 'windows-latest'
@@ -54,11 +63,10 @@ jobs:
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'
-        shell: pwsh
+        shell: bash
         run: |
-          New-Item -ItemType Directory -Force -Path build | Out-Null
-          Set-Location build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$env:RUNNER_TEMP/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows-static
           cmake --build . --config Release
 
       - name: Upload artifact (Linux/macOS)
